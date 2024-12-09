@@ -21,7 +21,7 @@ try
 
     std::vector<uint8_t> receiveBuffer(ReceiveBufferSize);
 
-    std::vector<int> sockets = CreateRawSockets(args.ProtocolsToListen, args.PortToListen);
+    std::vector<int> sockets = CreateRawSockets(args.ProtocolsToListen);
     std::vector<int> readSockets(sockets.size()), errorSockets(sockets.size());
 
     sighandler_t signalRes = std::signal(SIGINT, RequestExit);
@@ -45,8 +45,8 @@ try
         {
             sockaddr  addr;
             socklen_t saddrSize = sizeof(addr);
-            int       received =
-                recvfrom(readSocket, receiveBuffer.data(), ReceiveBufferSize, 0, &addr, &saddrSize);
+
+            int received = recvfrom(readSocket, receiveBuffer.data(), ReceiveBufferSize, 0, &addr, &saddrSize);
             if (received < 0)
             {
                 std::string errnoStr(std::strerror(errno));
@@ -55,9 +55,9 @@ try
             DumpPacket(receiveBuffer, packetsCount, args);
         }
     }
-    for (int readSocket : readSockets)
+    for (int socket : sockets)
     {
-        CloseSocket(readSocket);
+        CloseSocket(socket);
     }
     if ((args.ProtocolsToListen & InetProtocols::Udp) != 0)
         std::cout << "Got " << packetsCount.Udp << " UDP packets\n";

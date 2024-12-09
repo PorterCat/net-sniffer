@@ -35,7 +35,7 @@ static int CreateRawSocket(int protocol)
     return sock;
 }
 
-static std::vector<int> CreateRawSockets(InetProtocols protocols, std::optional<uint32_t> port)
+static std::vector<int> CreateRawSockets(InetProtocols protocols)
 {
     std::vector<int> result;
     if ((protocols & InetProtocols::Udp) != 0)
@@ -61,8 +61,10 @@ static void FillSet(fd_set &set, const std::vector<int> &sockets)
     }
 }
 
-static void
-FillVectorFromSet(fd_set &set, const std::vector<int> &full, std::vector<int> &destination)
+static void FillVectorFromSet(
+    fd_set &set,
+    const std::vector<int> &full,
+    std::vector<int> &destination)
 {
     destination.clear();
     for (int sock : full)

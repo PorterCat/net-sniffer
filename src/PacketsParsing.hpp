@@ -1,4 +1,5 @@
 #pragma once
+
 #include <array>
 #include <cstdint>
 #include <iostream>
@@ -22,7 +23,7 @@ struct PacketsCount
 
 static bool ShouldCount(uint16_t dstPort, Arguments args)
 {
-    return !(args.PortToListen.has_value() && dstPort != args.PortToListen.value());
+    return !(args.PortToListen.has_value() && ntohs(dstPort) != args.PortToListen.value());
 }
 
 static void DumpTransportPacket(
@@ -35,8 +36,8 @@ static void DumpTransportPacket(
 static void DumpPacket(const std::vector<uint8_t> &data, PacketsCount &packetsCount, Arguments args)
 {
     const iphdr *ipHeader = reinterpret_cast<const iphdr *>(data.data());
-
-    std::array<char, 64> srcAddrBuff, dstAddrBuff = {};
+    
+    std::array<char, 64> srcAddrBuff, dstAddrBuff;
     srcAddrBuff.fill('\0');
     inet_ntop(AF_INET, &ipHeader->saddr, srcAddrBuff.data(), srcAddrBuff.size());
     dstAddrBuff.fill('\0');
