@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/siren/repo/net-sniffer/net-sniffer/build",
-  "command": "/usr/bin/g++   -g -o CMakeFiles/SimpleNetSniffer.dir/src/main.cpp.o -c /home/siren/repo/net-sniffer/net-sniffer/src/main.cpp",
-  "file": "/home/siren/repo/net-sniffer/net-sniffer/src/main.cpp"
-}
-]
