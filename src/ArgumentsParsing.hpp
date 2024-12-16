@@ -3,6 +3,7 @@
 #include <optional>
 #include <stdexcept>
 #include <cstring>
+#include <array>
 
 namespace SimpleSniffer
 {
