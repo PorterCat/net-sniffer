@@ -1,3 +1,5 @@
-baseDir=$(dirname $0)
-outDir=$(cat ${baseDir}/OutDirName)
-rm -rf ${baseDir}/../${outDir}
+#!/usr/bin/sh
+
+cd $(dirname $0)
+outDir=$(cat ./OutDirName)
+rm -rf ../${outDir}

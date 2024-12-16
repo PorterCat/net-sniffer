@@ -1,5 +1,5 @@
 #!/usr/bin/sh
-baseDir=$(dirname $0)
-outDir=$(cat ${baseDir}/OutDirName)
-cmake --build ${baseDir}/../${outDir} $@
 
+cd $(dirname $0)
+outDir=$(cat ./OutDirName)
+cmake --build ../${outDir} $@
