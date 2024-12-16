@@ -22,25 +22,16 @@ try
     std::vector<uint8_t> receiveBuffer(ReceiveBufferSize);
 
     std::vector<int> sockets = CreateRawSockets(args.ProtocolsToListen);
-    std::vector<int> readSockets(sockets.size()), errorSockets(sockets.size());
+    std::vector<int> readSockets(sockets.size());
 
     sighandler_t signalRes = std::signal(SIGINT, RequestExit);
     if (signalRes == SIG_ERR)
         throw std::runtime_error("Failed to set SIGINT handler");
 
     PacketsCount packetsCount{};
-    while (Select(sockets, readSockets, errorSockets), !gExitRequested)
+    // Sockets exceptions in select are impossible in our case as I know...
+    while (Select(sockets, readSockets), !gExitRequested)
     {
-        for (int errorSocket : errorSockets)
-        {
-            std::cerr << "Error at socket '" << errorSocket << "':";
-            std::cerr << std::strerror(errno) << '\n';
-
-            auto errorSocketIt = std::find(sockets.begin(), sockets.end(), errorSocket);
-            sockets.erase(errorSocketIt);
-            CloseSocket(errorSocket);
-        }
-
         for (int readSocket : readSockets)
         {
             sockaddr  addr;

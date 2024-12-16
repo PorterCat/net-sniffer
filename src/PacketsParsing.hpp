@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <array>
 
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>

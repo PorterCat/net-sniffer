@@ -74,24 +74,21 @@ static void FillVectorFromSet(
     }
 }
 
-static int Select(fd_set *readSet, fd_set *errorSet)
+static int Select(fd_set *readSet)
 {
     // I hate select
     constexpr int Nfds = 1023;
-    return select(Nfds, readSet, nullptr, errorSet, nullptr);
+    return select(Nfds, readSet, nullptr, nullptr, nullptr);
 }
 
 static int Select(
     const std::vector<int> &sockets,
-    std::vector<int>       &outReadSockets,
-    std::vector<int>       &outErrorSockets)
+    std::vector<int>       &outReadSockets)
 {
-    fd_set readSet, errorSet;
+    fd_set readSet;
     FillSet(readSet, sockets);
-    FillSet(errorSet, sockets);
-    int selectRes = Select(&readSet, &errorSet);
+    int selectRes = Select(&readSet);
     FillVectorFromSet(readSet, sockets, outReadSockets);
-    FillVectorFromSet(errorSet, sockets, outErrorSockets);
     return selectRes;
 }
 } // namespace SimpleSniffer
