@@ -2,7 +2,7 @@
 Simple sniffer exmaple written in C++ using POSIX sockets.
 ## Build
 ```shell
-./scripts/clean.sh                  # Recursively delete build files folder (optional)
+./scripts/clean.sh                  # Recursively delete build files folder if exists (optional)
 ./scripts/generate-project-files.sh # Generate build files
 ./scripts/build.sh                  # Build using generated build files 
 ```
