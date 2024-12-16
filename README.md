@@ -8,5 +8,5 @@ Simple sniffer exmaple written in C++ using POSIX sockets.
 ```
 OR
 ```shell
-./scripts/rebuild.sh
+./scripts/rebuild.sh                # clean && generate-project-files && build
 ```

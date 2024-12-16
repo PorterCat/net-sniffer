@@ -1,0 +1,3 @@
+/home/siren/repo/net-sniffer/net-sniffer/build/CMakeFiles/SimpleNetSniffer.dir
+/home/siren/repo/net-sniffer/net-sniffer/build/CMakeFiles/edit_cache.dir
+/home/siren/repo/net-sniffer/net-sniffer/build/CMakeFiles/rebuild_cache.dir
