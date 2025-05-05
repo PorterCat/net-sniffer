@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <array>
+#include <cstdint>
 
 namespace SimpleSniffer
 {
@@ -36,6 +37,7 @@ struct Arguments
 {
     std::optional<uint16_t> PortToListen;
     InetProtocols           ProtocolsToListen;
+    std::optional<std::string> WordToSearch;
 };
 
 static int StoiWithErrorPrefix(const char *str, const char *errorMessagePrefix)
@@ -57,6 +59,7 @@ static void ParseOption(const char *option, const char *value, Arguments &args)
 {
     constexpr const char *PortOption     = "-port";
     constexpr const char *ProtocolOption = "-protocol";
+    constexpr const char *SearchOption   = "-search";
 
     std::array<char, 16> optionNameBuffer;
     optionNameBuffer.fill('\0');
@@ -87,6 +90,10 @@ static void ParseOption(const char *option, const char *value, Arguments &args)
             throw std::invalid_argument("Unsupported protocol '" + std::string(value) + '\'');
         }
     }
+    else if(std::strncmp(SearchOption, optionNameBuffer.data(), nopt) == 0)
+    {
+        args.WordToSearch = std::string(value);
+    }
     else
     {
         throw std::invalid_argument("Unrecognized option '" + std::string(option) + '\'');
@@ -97,19 +104,21 @@ static Arguments ParseArguments(int argc, char **argv)
 {
     Arguments parsedArgs{};
     parsedArgs.PortToListen      = std::nullopt;
+    parsedArgs.WordToSearch      = std::nullopt;
     parsedArgs.ProtocolsToListen = InetProtocols::All;
     if (argc == 1)
         return parsedArgs;
 
     // One or two options
-    if (argc == 3 || argc == 5)
+    if (argc == 3 || argc == 5 || argc == 7)
     {
-        // First option
         ParseOption(argv[1], argv[2], parsedArgs);
 
-        // Second option
         if (argc == 5)
             ParseOption(argv[3], argv[4], parsedArgs);
+
+        if (argc == 7)
+            ParseOption(argv[5], argv[6], parsedArgs);
     }
     else
     {
@@ -117,7 +126,7 @@ static Arguments ParseArguments(int argc, char **argv)
         throw std::invalid_argument(
             "Invalid arguments\n"
             "Usage: '" +
-            programName + " -port <value> -protocol <name>'");
+            programName + " [-port <value>] [-protocol <name>] [-word <string>]'");
     }
 
     return parsedArgs;

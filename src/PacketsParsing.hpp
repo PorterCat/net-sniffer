@@ -34,47 +34,74 @@ static void DumpTransportPacket(
               << " > " << dstIp << ':' << dstPort << " of size " << size << '\n';
 }
 
+static bool ContainsWord(const uint8_t* data, size_t data_len, const std::string& word) 
+{
+    if (word.empty() || data_len < word.size()) return false;
+    return std::search(
+        data, data + data_len,
+        word.begin(), word.end()
+    ) != (data + data_len);
+}
+
 static void DumpPacket(const std::vector<uint8_t> &data, PacketsCount &packetsCount, Arguments args)
 {
-    const iphdr *ipHeader = reinterpret_cast<const iphdr *>(data.data());
+    const iphdr* ipHeader = reinterpret_cast<const iphdr*>(data.data());
     
-    std::array<char, 64> srcAddrBuff, dstAddrBuff;
-    srcAddrBuff.fill('\0');
-    inet_ntop(AF_INET, &ipHeader->saddr, srcAddrBuff.data(), srcAddrBuff.size());
-    dstAddrBuff.fill('\0');
-    inet_ntop(AF_INET, &ipHeader->daddr, dstAddrBuff.data(), dstAddrBuff.size());
+    size_t ipHeaderSize = ipHeader->ihl * 4;
+    if (data.size() < ipHeaderSize) return;
 
-    uint16_t    ipHeaderSize              = ipHeader->ihl * 4;
-    const void *transportProtoHeaderStart = data.data() + ipHeaderSize;
-    if (ipHeader->protocol == IPPROTO_UDP)
-    {
-        const udphdr *udpHeader = reinterpret_cast<const udphdr *>(transportProtoHeaderStart);
-        if (ShouldCount(udpHeader->uh_dport, args))
-        {
-            packetsCount.Udp++;
-            DumpTransportPacket(
-                "UDP",
-                srcAddrBuff.data(),
-                ntohs(udpHeader->uh_sport),
-                dstAddrBuff.data(),
-                ntohs(udpHeader->uh_dport),
-                ntohs(ipHeader->tot_len));
-        }
+    const uint8_t* transportHeader = data.data() + ipHeaderSize;
+    const uint8_t* payload = transportHeader;
+    size_t payloadSize = data.size() - ipHeaderSize;
+
+    const char* protoName = "";
+    uint16_t srcPort = 0, dstPort = 0;
+    size_t transportHeaderSize = 0;
+
+    if (ipHeader->protocol == IPPROTO_UDP) {
+        protoName = "UDP";
+        const udphdr* udp = reinterpret_cast<const udphdr*>(transportHeader);
+        srcPort = ntohs(udp->uh_sport);
+        dstPort = ntohs(udp->uh_dport);
+        transportHeaderSize = sizeof(udphdr);
+    } 
+    else if (ipHeader->protocol == IPPROTO_TCP) {
+        protoName = "TCP";
+        const tcphdr* tcp = reinterpret_cast<const tcphdr*>(transportHeader);
+        srcPort = ntohs(tcp->th_sport);
+        dstPort = ntohs(tcp->th_dport);
+        transportHeaderSize = tcp->th_off * 4;
     }
-    else if (ipHeader->protocol == IPPROTO_TCP)
+    
+    if (data.size() >= ipHeaderSize + transportHeaderSize) 
     {
-        const tcphdr *tcpHeader = reinterpret_cast<const tcphdr *>(transportProtoHeaderStart);
-        if (ShouldCount(tcpHeader->th_dport, args))
-        {
-            packetsCount.Tcp++;
-            DumpTransportPacket(
-                "TCP",
-                srcAddrBuff.data(),
-                ntohs(tcpHeader->th_sport),
-                dstAddrBuff.data(),
-                ntohs(tcpHeader->th_dport),
-                ntohs(ipHeader->tot_len));
-        }
+        payload = transportHeader + transportHeaderSize;
+        payloadSize = data.size() - ipHeaderSize - transportHeaderSize;
+    }
+
+    if (!ShouldCount(dstPort, args)) return;
+    
+    bool wordOK = true;
+    if (args.WordToSearch) {
+        wordOK = ContainsWord(payload, payloadSize, *args.WordToSearch);
+    }
+
+    if (wordOK) 
+    {
+        std::array<char, INET_ADDRSTRLEN> srcAddr{}, dstAddr{};
+        inet_ntop(AF_INET, &ipHeader->saddr, srcAddr.data(), srcAddr.size());
+        inet_ntop(AF_INET, &ipHeader->daddr, dstAddr.data(), dstAddr.size());
+
+        (ipHeader->protocol == IPPROTO_UDP ? packetsCount.Udp : packetsCount.Tcp)++;
+        DumpTransportPacket(
+            protoName,
+            srcAddr.data(),
+            srcPort,
+            dstAddr.data(),
+            dstPort,
+            data.size()
+        );
     }
 }
+
 } // namespace SimpleSniffer

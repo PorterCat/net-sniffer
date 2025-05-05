@@ -76,7 +76,6 @@ static void FillVectorFromSet(
 
 static int Select(fd_set *readSet)
 {
-    // I hate select
     constexpr int Nfds = 1023;
     return select(Nfds, readSet, nullptr, nullptr, nullptr);
 }

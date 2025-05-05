@@ -29,7 +29,7 @@ try
         throw std::runtime_error("Failed to set SIGINT handler");
 
     PacketsCount packetsCount{};
-    // Sockets exceptions in select are impossible in our case as I know...
+    
     while (Select(sockets, readSockets), !gExitRequested)
     {
         for (int readSocket : readSockets)
@@ -44,6 +44,7 @@ try
                 throw std::runtime_error{ "Failed to receive package: " + errnoStr };
             }
             DumpPacket(receiveBuffer, packetsCount, args);
+            //DumpPacket(receiveBuffer.data(), received, packetsCount, args);
         }
     }
     for (int socket : sockets)
@@ -51,7 +52,7 @@ try
         CloseSocket(socket);
     }
     if ((args.ProtocolsToListen & InetProtocols::Udp) != 0)
-        std::cout << "Got " << packetsCount.Udp << " UDP packets\n";
+        std::cout << "\nGot " << packetsCount.Udp << " UDP packets\n";
     if ((args.ProtocolsToListen & InetProtocols::Tcp) != 0)
         std::cout << "Got " << packetsCount.Tcp << " TCP packets\n";
     std::cout << "Total: " << packetsCount.GetTotal() << '\n';
